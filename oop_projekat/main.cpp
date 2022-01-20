@@ -31,11 +31,11 @@ int main()
 	
 	//std::cout << match[1] << '\n';
 
-	std::map<std::string, std::vector<std::string>> transit_lines;
+	std::map<std::string, std::vector<std::string>> transit_lines_;
 
-	transit_lines[match[1]] = split_line(match[7]);
+	transit_lines_[match[1]] = split_line(match[7]);
 	
-	for (auto e: transit_lines)
+	for (auto e: transit_lines_)
 	{
 		std::cout << e.first << '\n';
 		for (auto a : e.second)
@@ -54,9 +54,10 @@ int main()
 	*/
 	TransitNetwork a;
 
-	a.load_data("stops.txt", "linije.txt");
+	a.load_data("stajalista.txt", "linije.txt");
 
-	for (auto e: a.transit_lines)
+	/*
+	for (auto& e: a.transit_lines_)
 	{
 		std::cout << e.first << '\n';
 		for(auto stop: e.second.stops_)
@@ -64,6 +65,19 @@ int main()
 			std::cout << stop << '\n';
 		}
 	}
+	
+	for (auto& e: a.stops_)
+	{
+		std::cout << e.first << "->" << e.second << '\n';
+	}
+	*/
+	/*
+	a.output_stop_info(422);
+	a.output_line_info("12");
+	*/
+	//a.output_line_statistics("12");
+	//a.stop_timetable(1024);
+	a.fill_adjacency_map();
 
 	return 0;
 }
