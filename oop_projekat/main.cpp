@@ -77,7 +77,9 @@ int main()
 	*/
 	//a.output_line_statistics("12");
 	//a.stop_timetable(1024);
-	a.fill_adjacency_map();
+	//a.fill_adjacency_map();
+	a.find_first_departure_after(422, 870);
+	//std::cout << a.find_first_departure_after(1024, 700)
 
 	return 0;
 }

@@ -185,7 +185,7 @@ void TransitNetwork::output_line_statistics(const std::string& line_name)
 	}
 }
 
-void TransitNetwork::stop_timetable(const int stop_number)
+std::map<int, std::vector<std::string>> TransitNetwork::stop_timetable(const int stop_number)
 {
 	std::map<int, std::vector<std::string>> timetable;
 	for (auto& [line_name, line] : transit_lines_)
@@ -213,17 +213,17 @@ void TransitNetwork::stop_timetable(const int stop_number)
 			
 		}
 	}
-	// auto timetable_it = timetable.lower_bound(496);
-	// if(timetable_it != timetable.begin())
-	// {
-	// 	//++timetable_it;
-	// 	std::cout << timetable_it->first << ": ";
-	// 	for (auto& line : timetable_it->second)
-	// 	{
-	// 		std::cout << line << " ";
-	// 	}
-	// 	std::cout << '\n';
-	// }
+	return timetable;
+	 auto timetable_it = timetable.lower_bound(490);
+	 if(timetable_it != timetable.begin())
+	 {
+	 	//++timetable_it;
+	 	std::cout << timetable_it->first << ": ";
+	 	for (auto& line : timetable_it->second)
+		{
+	 		std::cout << line << " ";}
+	 	std::cout << '\n';
+	  }
 
 	
 	for (auto& [time, line_names] : timetable)
@@ -247,13 +247,13 @@ void TransitNetwork::fill_adjacency_map()
 		{
 			if (i != stops.size() - 1)
 			{
-				adjacency_map_[std::to_string(stops[i]) + "_"+ line_name].insert(std::to_string(stops[i + 1]) + "_" + line_name);
-				adjacency_map_[std::to_string(stops[i]) + "_" + line_name].insert(std::to_string(stops[i]));
+				adjacency_map_[std::to_string(stops[i]) + "_" + line_name].insert(std::pair<std::string, int>{std::to_string(stops[i + 1]) + "_" + line_name, 3});
+				adjacency_map_[std::to_string(stops[i]) + "_" + line_name].insert(std::pair<std::string, int>{std::to_string(stops[i]), 0}); // change to smth for the third strategy
 			}
 			else
 			{
-				adjacency_map_[std::to_string(stops[i]) + "_" + line_name] = std::set<std::string>{};
-				adjacency_map_[std::to_string(stops[i]) + "_" + line_name].insert(std::to_string(stops[i]));
+				//adjacency_map_[std::to_string(stops[i]) + "_" + line_name] = std::set{ std::pair<std::string, int>{} };
+				adjacency_map_[std::to_string(stops[i]) + "_" + line_name].insert(std::pair<std::string, int>{std::to_string(stops[i]), 0});
 			}
 		}
 	}
@@ -261,22 +261,22 @@ void TransitNetwork::fill_adjacency_map()
 	{
 		for (auto& found_line : find_stop_lines(stop))
 		{
-			adjacency_map_[std::to_string(stop)].insert(std::to_string(stop) + "_" + found_line);
+			adjacency_map_[std::to_string(stop)].insert(std::pair<std::string, int>{std::to_string(stop) + "_" + found_line, 0});
 		}
 		
 	}
 
-
+	/*
 	for (auto& [stop_id, adjacent] : adjacency_map_)
 	{
 		std::cout << stop_id << " : ";
-		for (auto& adj : adjacent)
+		for (auto& [line_name, distance] : adjacent)
 		{
-			std::cout << adj << " ";
+			std::cout << line_name <<":"  << distance << " ";
 		}
 		std::cout << '\n';
 	}
-	
+	*/
 }
 
 std::vector<std::string> TransitNetwork::find_stop_lines(const int stop_number)
@@ -291,4 +291,33 @@ std::vector<std::string> TransitNetwork::find_stop_lines(const int stop_number)
 		}
 	}
 	return found_lines;
+}
+
+std::map<std::string, int> TransitNetwork::find_first_departure_after(const int stop_number,
+	const int time)
+{
+	std::map<std::string, int> lines_first_departure_after;
+
+	auto timetable = stop_timetable(stop_number);
+	auto timetable_it = timetable.lower_bound(time);
+	
+	while(timetable_it != timetable.end())
+	{
+		for(auto& line: timetable_it->second)
+		{
+			if (!lines_first_departure_after.contains(line))
+			{
+				lines_first_departure_after[line] = timetable_it->first;
+			}
+		}
+		
+		++timetable_it;
+	}
+
+	for(auto& [line_name, arrival_time] : lines_first_departure_after)
+	{
+		std::cout << line_name << ":" << arrival_time << '\n';
+	}
+
+	return lines_first_departure_after;
 }
