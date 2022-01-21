@@ -13,6 +13,7 @@
 
 
 #include "Line.h"
+#include "Constants.h";
 
 class TransitNetwork
 {
@@ -27,14 +28,20 @@ public:
 	void fill_adjacency_map();
 
 	std::map<std::string, int> find_first_departure_after(const int stop_number, const int time); //add line_name to output the next departure of specific line
+
+	void find_path_fastest(const int departure_stop_number, const int destination_stop_number, const int departure_time);
 private:
 	std::map<std::string, Line> transit_lines_;
 	std::map<int, std::string> stops_;
+	 
 
-	std::map<std::string, std::set<std::pair<std::string, int>>> adjacency_map_;
+	//std::map<std::string, std::set<std::pair<std::string, int>>> graph_adjacency_map_;
+	std::map<std::string, std::map<std::string, int>> graph_adjacency_map_;
+	std::map<std::string, std::tuple<int, bool, std::string>> graph_traversal_map;
 
 	std::vector<std::string> find_stop_lines(const int stop_number);
 
+	std::string find_nearest();
 };
 #endif
 

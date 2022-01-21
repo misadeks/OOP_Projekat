@@ -78,8 +78,10 @@ int main()
 	//a.output_line_statistics("12");
 	//a.stop_timetable(1024);
 	//a.fill_adjacency_map();
-	a.find_first_departure_after(422, 870);
+	//a.find_first_departure_after(422, 870);
 	//std::cout << a.find_first_departure_after(1024, 700)
+
+	a.find_path_fastest(103, 99, 3);
 
 	return 0;
 }

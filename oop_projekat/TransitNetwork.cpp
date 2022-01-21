@@ -247,13 +247,20 @@ void TransitNetwork::fill_adjacency_map()
 		{
 			if (i != stops.size() - 1)
 			{
-				adjacency_map_[std::to_string(stops[i]) + "_" + line_name].insert(std::pair<std::string, int>{std::to_string(stops[i + 1]) + "_" + line_name, 3});
-				adjacency_map_[std::to_string(stops[i]) + "_" + line_name].insert(std::pair<std::string, int>{std::to_string(stops[i]), 0}); // change to smth for the third strategy
+				/*
+				graph_adjacency_map_[std::to_string(stops[i]) + "_" + line_name].insert(std::pair<std::string, int>{std::to_string(stops[i + 1]) + "_" + line_name, 3});
+				graph_adjacency_map_[std::to_string(stops[i]) + "_" + line_name].insert(std::pair<std::string, int>{std::to_string(stops[i]), 0}); // change to smth for the third strategy
+				*/
+				graph_adjacency_map_[std::to_string(stops[i]) + "_" + line_name][std::to_string(stops[i + 1]) + "_" + line_name] =  3;
+				graph_adjacency_map_[std::to_string(stops[i]) + "_" + line_name][std::to_string(stops[i])] = 50; // change to smth for the third strategy
 			}
 			else
 			{
-				//adjacency_map_[std::to_string(stops[i]) + "_" + line_name] = std::set{ std::pair<std::string, int>{} };
-				adjacency_map_[std::to_string(stops[i]) + "_" + line_name].insert(std::pair<std::string, int>{std::to_string(stops[i]), 0});
+				//graph_adjacency_map_[std::to_string(stops[i]) + "_" + line_name] = std::set{ std::pair<std::string, int>{} };
+				/*
+				graph_adjacency_map_[std::to_string(stops[i]) + "_" + line_name].insert(std::pair<std::string, int>{std::to_string(stops[i]), 0});
+				*/
+				graph_adjacency_map_[std::to_string(stops[i]) + "_" + line_name][std::to_string(stops[i])] = 50;
 			}
 		}
 	}
@@ -261,13 +268,13 @@ void TransitNetwork::fill_adjacency_map()
 	{
 		for (auto& found_line : find_stop_lines(stop))
 		{
-			adjacency_map_[std::to_string(stop)].insert(std::pair<std::string, int>{std::to_string(stop) + "_" + found_line, 0});
+			graph_adjacency_map_[std::to_string(stop)][std::to_string(stop) + "_" + found_line] = 0;
 		}
 		
 	}
 
 	/*
-	for (auto& [stop_id, adjacent] : adjacency_map_)
+	for (auto& [stop_id, adjacent] : graph_adjacency_map_)
 	{
 		std::cout << stop_id << " : ";
 		for (auto& [line_name, distance] : adjacent)
@@ -293,8 +300,27 @@ std::vector<std::string> TransitNetwork::find_stop_lines(const int stop_number)
 	return found_lines;
 }
 
+std::string TransitNetwork::find_nearest()
+{
+	int minimal_distance = constants::infinity;
+	std::string result = graph_traversal_map.begin()->first;
+
+	for (auto& [stop_name, stop_tuple] : graph_traversal_map)
+	{
+		if (!std::get<1>(stop_tuple)) {
+			const int distance = std::get<0>(stop_tuple);
+			if (distance < minimal_distance)
+			{
+				minimal_distance = distance;
+				result = stop_name;
+			}
+		}
+	}
+	return result;
+}
+
 std::map<std::string, int> TransitNetwork::find_first_departure_after(const int stop_number,
-	const int time)
+                                                                      const int time)
 {
 	std::map<std::string, int> lines_first_departure_after;
 
@@ -320,4 +346,79 @@ std::map<std::string, int> TransitNetwork::find_first_departure_after(const int 
 	}
 
 	return lines_first_departure_after;
+}
+
+void TransitNetwork::find_path_fastest(const int departure_stop_number, const int destination_stop_number, const int departure_time)
+{
+	std::size_t solved_nodes_count = 0;
+	std::string departure_stop = std::to_string(departure_stop_number);
+	std::string destination_stop = std::to_string(destination_stop_number);
+	int distance_running_total = 0;
+	fill_adjacency_map();
+
+	//initialize traversal_map
+	for (auto& [stop, adjacent_stops] : graph_adjacency_map_)
+	{
+		int distance = constants::infinity;
+		if(stop == departure_stop)
+		{
+			distance = 0;
+		}
+		graph_traversal_map[stop] = { distance, false, ""};
+	}
+	
+	
+
+
+	while(solved_nodes_count < graph_traversal_map.size())
+	{
+		std::string nearest_node = find_nearest();
+
+		
+		distance_running_total = std::get<0>(graph_traversal_map[nearest_node]);
+
+		std::get<1>(graph_traversal_map[nearest_node]) = true;
+		solved_nodes_count++;
+
+		if (nearest_node == destination_stop)
+		{
+			std::cout << "kuku majko nesto sam nasao!" << '\n';
+			/*
+			for (auto& [a, b] : graph_traversal_map)
+			{
+				std::cout << a << " " << std::get<0>(b) << " " << std::get<1>(b) << " " << std::get<2>(b) << '\n';
+			}
+			return;
+			*/
+			//ako je dosao do kraja
+			std::cout << std::get<0>(graph_traversal_map[destination_stop]);
+			std::cout << destination_stop << "<-";
+
+			std::string parent = std::get<2>(graph_traversal_map[destination_stop]);
+			std::cout << parent << "<-";
+			while (parent != "")
+			{
+				parent = std::get<2>(graph_traversal_map[parent]);
+				std::cout << parent << "<-";
+			}
+		}
+
+		for(auto& [stop_number, relative_distance] : graph_adjacency_map_[nearest_node])
+		{
+			if(distance_running_total <std::get<0>(graph_traversal_map[stop_number]))
+			{
+				std::get<0>(graph_traversal_map[stop_number]) = distance_running_total + relative_distance;
+				std::get<2>(graph_traversal_map[stop_number]) = nearest_node;
+			}
+			
+		}
+
+	}
+	/*
+	for (auto& [a, b] : graph_traversal_map)
+	{
+		std::cout << a << " " << std::get<0>(b) << " " << std::get<1>(b) << " " << std::get<2>(b) << '\n';
+	}
+	return;
+	*/
 }
