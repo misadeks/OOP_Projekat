@@ -10,15 +10,17 @@
 #include <set>
 #include <string>
 #include <vector>
-
+#include <stack>
 
 #include "Line.h"
-#include "Constants.h";
+#include "Constants.h"
 
 class TransitNetwork
 {
 public:
-	void load_data(const std::string& stops_filename, const std::string& transit_lines_filename);
+	void load_stops_data(const std::string& stops_filename);
+	void load_transit_lines_data(const std::string& transit_lines_filename);
+
 	void output_stop_info(const int stop_number);
 	void output_line_info(const std::string& line_name);
 	void output_line_statistics(const std::string& line_name);
@@ -29,7 +31,7 @@ public:
 
 	std::map<std::string, int> find_first_departure_after(const int stop_number, const int time); //add line_name to output the next departure of specific line
 
-	void find_path_fastest(const int departure_stop_number, const int destination_stop_number, const int departure_time);
+	std::vector<std::string> find_path_fastest(const int departure_stop_number, const int destination_stop_number, const int departure_time);
 private:
 	std::map<std::string, Line> transit_lines_;
 	std::map<int, std::string> stops_;

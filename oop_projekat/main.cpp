@@ -54,8 +54,8 @@ int main()
 	*/
 	TransitNetwork a;
 
-	a.load_data("stajalista.txt", "linije.txt");
-
+	a.load_stops_data("stajalista.txt");
+	a.load_transit_lines_data("linije.txt");
 	/*
 	for (auto& e: a.transit_lines_)
 	{
@@ -81,7 +81,35 @@ int main()
 	//a.find_first_departure_after(422, 870);
 	//std::cout << a.find_first_departure_after(1024, 700)
 
-	a.find_path_fastest(103, 99, 3);
+	auto path = a.find_path_fastest(154, 111, 483);
+
+	std::string old_line;
+	std::string current_line;
+	if (path.empty())
+	{
+		std::cout << "NEMA PUTANJE!";
+	}
+	for(std::size_t i = 0; i < path.size(); i++)
+	{
+		std::smatch match;
+		std::regex_search(path[i], match, constants::re_pattern_pathfinding_stop_name);
+		old_line = current_line;
+		current_line = match[2];
+	
+		if (old_line != current_line) {
+			if (i != 0) {
+				std::cout << '\n';
+			}
+			std::cout << old_line << "->" << current_line << '\n';
+		}
+		std::cout << match[1] << " ";
+		
+	
+	}
+	// for(auto&e: path)
+	// {
+	// 	std::cout << e << "";
+	// }
 
 	return 0;
 }
