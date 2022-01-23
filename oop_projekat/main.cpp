@@ -7,111 +7,215 @@
 
 #include "TransitNetwork.h"
 
-std::vector<std::string> split_line(const std::string& s)
-{
-	std::string temp;
-	std::stringstream ss(s);
-	std::vector<std::string> line;
-
-	while (getline(ss, temp, ' ')) {
-		line.push_back(temp);
-	}
-	return line;
-}
-
 int main()
 {
-	/*
-	std::regex re_string = std::regex(
-		R"(^(\w+) \[([0-9]{2}):([0-9]{2})-([0-9]{2}):([0-9]{2})#([0-9]{1,2})\] ([0-9 ]+)$)");
-	
-	std::string test = "12 [05:30-23:30#15] 154 578 123 422 3112 99 12 1221 1212";
-	std::smatch match;
-	std::regex_search(test, match, re_string);
-	
-	//std::cout << match[1] << '\n';
+	TransitNetwork network;
+	bool stops_loaded = false, lines_loaded = false;
 
-	std::map<std::string, std::vector<std::string>> transit_lines_;
-
-	transit_lines_[match[1]] = split_line(match[7]);
-	
-	for (auto e: transit_lines_)
+	std::cout << "Dobrodošli u simulator mreže gradskog prevoza. Molimo Vas, odaberite opciju:" << '\n';
+	while(true)
 	{
-		std::cout << e.first << '\n';
-		for (auto a : e.second)
-		{
-			std::cout << a << '\n';
-		}
-	}
-	
-	
-	
-	std::ifstream input("linije.txt");
+		//load block begin
+		while (!stops_loaded || !lines_loaded) {
+			int option = 0;
 
-	if (input.is_open()) {
+			std::cout << "1. Učitavanje podataka o mreži gradskog prevoza" << '\n';
+			std::cout << "0. Kraj rada:" << '\n';
 
-	}
-	*/
-	TransitNetwork a;
+			std::cout << constants::console_yellow_text;
+			std::cin >> option;
+			std::cout << constants::console_default;
 
-	a.load_stops_data("stajalista.txt");
-	a.load_transit_lines_data("linije.txt");
-	/*
-	for (auto& e: a.transit_lines_)
-	{
-		std::cout << e.first << '\n';
-		for(auto stop: e.second.stops_)
-		{
-			std::cout << stop << '\n';
-		}
-	}
-	
-	for (auto& e: a.stops_)
-	{
-		std::cout << e.first << "->" << e.second << '\n';
-	}
-	*/
-	/*
-	a.output_stop_info(422);
-	a.output_line_info("12");
-	*/
-	//a.output_line_statistics("12");
-	//a.stop_timetable(1024);
-	//a.fill_adjacency_map();
-	//a.find_first_departure_after(422, 870);
-	//std::cout << a.find_first_departure_after(1024, 700)
+			switch (option)
+			{
+			case 1:
+				while(!stops_loaded)
+				{
+					try
+					{
+						std::cout << "Molimo Vas, unesite putanju do fajla sa stajalištima:" << '\n';
+						std::string filename;
 
-	auto path = a.find_path_fastest(154, 111, 483);
+						std::cout << constants::console_yellow_text;
+						std::cin >> filename;
+						std::cout << constants::console_default;
 
-	std::string old_line;
-	std::string current_line;
-	if (path.empty())
-	{
-		std::cout << "NEMA PUTANJE!";
-	}
-	for(std::size_t i = 0; i < path.size(); i++)
-	{
-		std::smatch match;
-		std::regex_search(path[i], match, constants::re_pattern_pathfinding_stop_name);
-		old_line = current_line;
-		current_line = match[2];
-	
-		if (old_line != current_line) {
-			if (i != 0) {
-				std::cout << '\n';
+						network.load_stops_data(filename);
+						stops_loaded = true;
+					}
+					catch (Exception& e)
+					{
+						std::cout << e.repr_string() << '\n';
+					}
+				}
+				while(!lines_loaded)
+				{
+					try {
+						std::cout << "Molimo Vas, unesite putanju do fajla sa linijama gradskog prevoza:" << '\n';
+						std::string filename;
+
+						std::cout << constants::console_yellow_text;
+						std::cin >> filename;
+						std::cout << constants::console_default;
+
+						network.load_transit_lines_data(filename);
+						lines_loaded = true;
+					}
+					catch (Exception& e)
+					{
+						std::cout << e.repr_string() << '\n';
+					}
+				}
+				break;
+			case 0:
+				return 0;
+			default:
+				std::cout << constants::console_red_text << 
+					"Nesipravan unos! Izaberite jednu od ponuđenih opcija."<< '\n' << constants::console_default;
 			}
-			std::cout << old_line << "->" << current_line << '\n';
 		}
-		std::cout << match[1] << " ";
+		//load block end
 		
-	
-	}
-	// for(auto&e: path)
-	// {
-	// 	std::cout << e << "";
-	// }
+		std::cout << "Mreža gradskog prevoza je uspešno učitana. ";
+		while (true)
+		{
+			std::cout << "Molimo Vas, odaberite opciju:" << '\n';
+			std::cout << "1. Prikaz informacija o stajalištu" << '\n';
+			std::cout << "2. Prikaz osnovnih informacija o liniji gradskog prevoza" << '\n';
+			std::cout << "3. Prikaz statističkih informacija o liniji gradskog prevoza" << '\n';
+			std::cout << "4. Pronalazak putanje između dva stajališta" << '\n';
+			std::cout << "0. Kraj rada" << '\n';
 
-	return 0;
+			int option;
+
+			std::cout << constants::console_yellow_text;
+			std::cin >> option;
+			std::cout << constants::console_default;
+
+			switch (option)
+			{
+			case 1:
+				std::cout << "Molimo Vas, unesite oznaku stajališta čije informacije želite da prikažete." << '\n';
+				try {
+					int stop;
+
+					std::cout << constants::console_yellow_text;
+					std::cin >> stop;
+					std::cout << constants::console_default;
+
+					network.output_stop_info(stop);
+					std::cout <<constants::console_green_text << "Generisan je fajl stajaliste_" << stop <<
+						".txt sa informacijama o stajalištu " << stop << "." << '\n' << constants::console_default;
+				}
+				catch (Exception& e)
+				{
+					std::cout << e.repr_string() << '\n';
+				}
+				break;
+			case 2:
+				std::cout << "Molimo Vas, unesite oznaku linije čije osnovne informacije želite da prikažete." << '\n';
+				try {
+					std::string line;
+
+					std::cout << constants::console_yellow_text;
+					std::cin >> line;
+					std::cout << constants::console_default;
+
+					network.output_line_info(line);
+					std::cout << constants::console_green_text << "Generisan je fajl linija_" << line <<
+						".txt sa osnovnim informacijama o liniji " << line << "." << '\n' << constants::console_default;
+				}
+				catch (Exception& e)
+				{
+					std::cout << e.repr_string() << '\n';
+				}
+				break;
+			case 3:
+				std::cout << "Molimo Vas, unesite oznaku linije čije statističke informacije želite da prikažete." << '\n';
+				try {
+					std::string line;
+
+					std::cout << constants::console_yellow_text;
+					std::cin >> line;
+					std::cout << constants::console_default;
+
+					network.output_line_statistics(line);
+					std::cout << constants::console_green_text << "Generisan je fajl statistika_" << line <<
+						".txt sa statističkim informacijama o liniji " << line << "." << '\n' << constants::console_default;
+				}
+				catch (Exception& e)
+				{
+					std::cout << e.repr_string() << '\n';
+				}
+				break;
+			case 4:
+				try {
+					int departure_stop, destination_stop;
+					std::string departure_time;
+
+					std::cout << "Molimo Vas, unesite oznaku početnog stajališta" << '\n';
+
+					std::cout << constants::console_yellow_text;
+					std::cin >> departure_stop;
+					std::cout << constants::console_default;
+
+					std::cout << "Molimo Vas, unesite oznaku krajnjeg stajališta" << '\n';
+
+					std::cout << constants::console_yellow_text;
+					std::cin >> destination_stop;
+					std::cout << constants::console_default;
+
+					std::cout << "Molimo Vas, unesite vreme polaska" << '\n';
+
+					std::cout << constants::console_yellow_text;
+					std::cin >> departure_time;
+					std::cout << constants::console_default;
+
+					bool loop = true;
+					while (loop) {
+						std::cout << "Molimo Vas, odaberite strategiju koju želite za traženje putanje." << '\n';
+						std::cout << "1. Bilo koja putanja između početnog i krajnjeg stajališta." << '\n';
+						std::cout << "2. Najbrža putanja između početnog i krajnjeg stajališta." << '\n';
+						std::cout << "3. Najmanji broj presedanja između početnog i krajnjeg stajališta." << '\n';
+						std::cout << "0. Kraj pretrage putanji." << '\n';
+
+						int option;
+						std::cout << constants::console_yellow_text;
+						std::cin >> option;
+						std::cout << constants::console_default;
+
+						switch (option)
+						{
+						case 1:
+						case 2:
+							network.find_path(constants::strategy::FASTEST, departure_stop, destination_stop, departure_time);
+							break;
+						case 3:
+							network.find_path(constants::strategy::LEAST_TRANSFERS, departure_stop, destination_stop, departure_time);
+							break;
+						case 0:
+							loop = false;
+							break;
+						default:
+							std::cout << constants::console_red_text <<
+								"Nesipravan unos! Izaberite jednu od ponuđenih opcija." << '\n' << constants::console_default;
+						}
+					}
+				}
+				catch (Exception& e)
+				{
+					std::cout << e.repr_string() << '\n';
+				}
+				break;
+			case 0:
+				return 0;
+			default:
+				std::cout << constants::console_red_text <<
+					"Nesipravan unos! Izaberite jednu od ponuđenih opcija." << '\n' << constants::console_default;
+			}
+		}
+
+	}
 }
 
 
