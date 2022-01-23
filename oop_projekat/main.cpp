@@ -11,6 +11,9 @@ int main()
 {
 	TransitNetwork network;
 	bool stops_loaded = false, lines_loaded = false;
+	std::cout << constants::console_cyan_text;
+	std::cout << constants::loading_text << "\n\n";
+	std::cout << constants::console_default;
 
 	std::cout << "Dobrodošli u simulator mreže gradskog prevoza. Molimo Vas, odaberite opciju:" << '\n';
 	while(true)
