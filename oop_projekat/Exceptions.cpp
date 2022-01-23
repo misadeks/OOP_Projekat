@@ -4,7 +4,7 @@ const std::string FileReadError::repr_string()
 {
 	std::stringstream ss;
 
-	ss << constants::console_red_text << "GREŠKA: Fajl nije pronađena." << constants::console_default;
+	ss << constants::console_red_text << "GREŠKA: Fajl nije pronađen." << constants::console_default;
 	return ss.str();
 }
 

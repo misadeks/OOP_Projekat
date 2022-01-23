@@ -178,13 +178,23 @@ void TransitNetwork::output_line_statistics(const std::string& line_name)
 void TransitNetwork::find_path(const constants::strategy strategy, const int departure_stop_number,
 	const int destination_stop_number, const std::string& departure_time_string)
 {
-	std::smatch match;
-	std::regex_search(departure_time_string, match, constants::re_pattern_time);
-	if(match.empty())
+	int departure_time = 0;
+
+	std::smatch time_match;
+	std::regex_search(departure_time_string, time_match, constants::re_pattern_time);
+	if (time_match.empty())
 	{
 		throw TimeError();
 	}
-	int departure_time = std::stoi(match[1]) * 60 + std::stoi(match[2]);
+
+	if(std::stoi(time_match[1]) < 24 && std::stoi(time_match[2]) < 60)
+	{
+		departure_time = std::stoi(time_match[1]) * 60 + std::stoi(time_match[2]);
+	}
+	else
+	{
+		throw TimeError();
+	}
 
 	if (!stops_.contains(departure_stop_number))
 	{
@@ -197,7 +207,7 @@ void TransitNetwork::find_path(const constants::strategy strategy, const int dep
 	if (departure_stop_number == destination_stop_number)
 	{
 		std::cout << constants::console_green_text << "Već ste na odredištu. Fajl nije kreiran."
-		<< "\n" << constants::console_green_text;
+		<< "\n" << constants::console_default;
 		return;
 	}
 
